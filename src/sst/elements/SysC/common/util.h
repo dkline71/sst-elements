@@ -23,11 +23,11 @@
 #define UTIL_PARAMS _params
 #define UTIL_LEVEL 2
 
-#define FIND_BOOL(param,def)   UTIL_PARAMS.find_integer( param,def)
-#define FIND_INT(param,def)    UTIL_PARAMS.find_integer( param,def)
-#define FIND_FLOAT(param,def)  UTIL_PARAMS.find_floating(param,def)
-#define FIND_STRING(param,def) UTIL_PARAMS.find_string(  param,def)
-#define FIND_HEX(param,def)    UTIL_PARAMS.find_integer( param,def)
+#define FIND_BOOL(param,def)   UTIL_PARAMS.find<bool>( param,def)
+#define FIND_INT(param,def)    UTIL_PARAMS.find<int>( param,def)
+#define FIND_FLOAT(param,def)  UTIL_PARAMS.find<float>(param,def)
+#define FIND_STRING(param,def) UTIL_PARAMS.find<std::string>(  param,def)
+#define FIND_HEX(param,def)    UTIL_PARAMS.find<int>( param,def)
 
 #define REPORT_BOOL(var) UTIL_OUT.verbose(CALL_INFO,UTIL_LEVEL,0,             \
                                       #var " = %s\n",(var ? "true" : "false"))

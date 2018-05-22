@@ -60,9 +60,7 @@ class TLMSimpleMem
   typedef Request_t::dataVec                            DateVector_t;
   typedef BaseType::Handler<ThisType>                   RequestHandler_t;
   typedef std::deque<Request_t*>                        RQueue_t;
-  typedef uint32_t                                      GroupId_t;
-  typedef std::pair<Id_t,GroupId_t>                     IdPair_t;
-  typedef std::map<Address_t,IdPair_t>                  IdMap_t;
+  typedef std::map<Address_t,Id_t>                      IdMap_t;
 
   typedef SST::SysC::Controller                         Controller_t;
 

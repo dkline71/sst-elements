@@ -1,5 +1,5 @@
 The patch must be applied to your systemc installation
-The patch mearly exposes a member variable for public use.
+The patch merely exposes a member variable for public use.
 The location of the SystemC library must be in LD_RUN_PATH.
 
 The primary bit used to intrgrate SystemC codes is the TLMSimpleMem module.

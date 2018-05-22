@@ -44,13 +44,13 @@ MemoryWedge::MemoryWedge(ComponentId_t _id, Params& _params)
   if(!upstream)
     out.fatal(CALL_INFO,-4,
               "Could not set up UpstreamPort link, check spelling in SDL");
-  load_filename=_params.find_string(WEDGE_LOADFILE,"");
+  load_filename=_params.find<std::string>(WEDGE_LOADFILE,"");
   if(""==load_filename)
     out.verbose(CALL_INFO,1,0,"No load file specified");
   else
     out.verbose(CALL_INFO,2,0,
                 WEDGE_LOADFILE " = '%s'\n",load_filename.c_str());
-  write_filename=_params.find_string("write_filename","");
+  write_filename=_params.find<std::string>("write_filename","");
   if(""==write_filename)
     out.verbose(CALL_INFO,1,0,"No write file specified");
   else

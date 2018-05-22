@@ -86,7 +86,7 @@ Controller::Controller(SST::ComponentId_t _id,
 , out("In @p() at @f:@l: ",0,0,Output::STDOUT)
 {
   out.setVerboseLevel(
-      _params.find_integer(CON_VERBOSE_LEVEL,DEF_CON_VERBOSE_LEVEL)
+      _params.find<int>(CON_VERBOSE_LEVEL,DEF_CON_VERBOSE_LEVEL)
       );
   out.verbose(CALL_INFO,1,0,"Constructing Controller\n");
   //Determine self update period-------------

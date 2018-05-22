@@ -25,15 +25,15 @@ SimpleWedge_base::SimpleWedge_base(ComponentId_t _id, Params& _params)
 {
   out.verbose(CALL_INFO,1,0,"Constructing SimpleWedge_base\n");
   base_address = 
-      _params.find_integer(SW_BASE_ADDRESS,DEF_SW_BASE_ADDRESS);
+      _params.find<int>(SW_BASE_ADDRESS,DEF_SW_BASE_ADDRESS);
   out.verbose(CALL_INFO,2,0,
               SW_BASE_ADDRESS " = 0x%lX\n",base_address);
   size_multiplier = 
-      _params.find_integer(SW_SIZE_MULTIPLIER,DEF_SW_SIZE_MULTIPLIER);
+      _params.find<int>(SW_SIZE_MULTIPLIER,DEF_SW_SIZE_MULTIPLIER);
   out.verbose(CALL_INFO,2,0,
               SW_SIZE_MULTIPLIER " = %d\n",size_multiplier);
   size_exponent = 
-      _params.find_integer(SW_SIZE_EXP,DEF_SW_SIZE_EXP);
+      _params.find<int>(SW_SIZE_EXP,DEF_SW_SIZE_EXP);
   out.verbose(CALL_INFO,2,0,
               SW_SIZE_EXP " = %d\n",size_exponent);
   size=(uint64_t(2)<<size_exponent)*uint64_t(size_multiplier);

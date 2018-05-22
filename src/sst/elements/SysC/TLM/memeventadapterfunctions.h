@@ -39,23 +39,19 @@ template<>
 bool isRead(Output& out,
             SST::MemHierarchy::MemEvent& _e){
   switch(_e.getCmd()){
-  case MemHierarchy::PutS:
-  case MemHierarchy::PutM:
-  case MemHierarchy::PutE:
-  case MemHierarchy::PutX:
-  case MemHierarchy::PutXE:
-    //case MemHierarchy::WriteReq:
-    //case MemHierarchy::SupplyData:
-    break;
-  case MemHierarchy::GetS:
-  case MemHierarchy::GetX:
-  case MemHierarchy::GetSEx:
-    return true;
-    break;
-  default:
-    out.fatal(CALL_INFO,-1,
+      case MemHierarchy::Command::PutS:
+      case MemHierarchy::Command::PutM:
+      case MemHierarchy::Command::PutE:
+        break;
+      case MemHierarchy::Command::GetS:
+      case MemHierarchy::Command::GetX:
+      case MemHierarchy::Command::GetSX:
+        return true;
+        break;
+    default:
+        out.fatal(CALL_INFO,-1,
               "Unsupoorted command '%s'\n",
-              MemHierarchy::CommandString[_e.getCmd()]
+              MemHierarchy::CommandString[(int)_e.getCmd()]
              );
   }//switch
   return false;
@@ -83,11 +79,13 @@ SST::MemHierarchy::MemEvent* makeEvent(Output& out,
   SST::MemHierarchy::Command cmd;
   Address_t address=_trans.get_address();
   if(_trans.is_write())
-    cmd = MemHierarchy::PutM;
+    cmd = MemHierarchy::Command::PutM;
   else if(_trans.is_read())
-    cmd = MemHierarchy::GetS;
-  else
+    cmd = MemHierarchy::Command::GetS;
+  else {
     out.fatal(CALL_INFO,-1,"Unsupported Command\n");
+    cmd = MemHierarchy::Command::NULLCMD; // Eliminate compiler warning
+  }
   EVENT* ev = new EVENT(_ad->parent_component,
                         address,address,
                         cmd,
@@ -126,7 +124,7 @@ tlm::tlm_generic_payload* makePayload(Output& out,
       out.fatal(CALL_INFO,-1,
                 "Transaction alignment does not match forced alignment\n");
   trans->set_address(new_address);
-  uint32_t new_size=_event.getSize();
+  uint32_t new_size=_event.getPayloadSize();
   if(_ad->force_size)
     new_size=_ad->enforced_size;
   else if(_ad->check_size)
@@ -143,8 +141,8 @@ tlm::tlm_generic_payload* makePayload(Output& out,
   assert(trans->get_data_ptr());
   if(_copy_data){
     //    if(!no_payload){
-    if(new_size >= _event.getSize())
-      memcpy(trans->get_data_ptr(),_event.getPayload().data(),_event.getSize());
+    if(new_size >= _event.getPayloadSize())
+      memcpy(trans->get_data_ptr(),_event.getPayload().data(),_event.getPayloadSize());
     else
       memcpy(trans->get_data_ptr(),_event.getPayload().data(),new_size);
     //    }
@@ -169,15 +167,15 @@ void updatePayload(Output& out,
   //Assume that if size is forced, that payload size already matches it
   if(_copy_data){
     if(!_ad->force_size){
-      if(_p.get_data_length() == _e.getSize())
-        memcpy(_p.get_data_ptr(),_e.getPayload().data(),_e.getSize());
+      if(_p.get_data_length() == _e.getPayloadSize())
+        memcpy(_p.get_data_ptr(),_e.getPayload().data(),_e.getPayloadSize());
       else
         out.fatal(CALL_INFO,-1,
                   "Sizes do not match\n");
     }
     else{
-      if(_p.get_data_length() >= _e.getSize())
-        memcpy(_p.get_data_ptr(),_e.getPayload().data(),_e.getSize());
+      if(_p.get_data_length() >= _e.getPayloadSize())
+        memcpy(_p.get_data_ptr(),_e.getPayload().data(),_e.getPayloadSize());
       else
         memcpy(_p.get_data_ptr(),_e.getPayload().data(),_p.get_data_length());
     }
@@ -285,11 +283,13 @@ tlm::tlm_sync_enum sendResponse(Output& out,
   typedef SST::SysC::Adapter_b<EVENT>   Adapter_t;
   auto _ad=dynamic_cast<Adapter_t* >(_adapter);
   assert(_ad);
-  if(_p.is_read())
-    _e.setGrantedState(MemHierarchy::M);
-  else 
-    _e.setGrantedState(MemHierarchy::S);
-  if(MemHierarchy::PutM 
+  // This code is now encoded by the response command (for a read, GetXResp=M, GetSResp=S)
+  //if(_p.is_read()) 
+  //  _e.setGrantedState(MemHierarchy::M);
+  //else 
+  //  _e.setGrantedState(MemHierarchy::S);
+
+  if(MemHierarchy::Command::PutM 
             != _ad->event_map[_p.get_address()]->front()->getCmd())
     _link->send(&_e);
   return tlm::TLM_COMPLETED;

@@ -43,13 +43,13 @@ MEGenerator::MEGenerator(SST::ComponentId_t _id,Params& _params)
 : Component(_id) {
   cout<<"Constructing MEGenerator"<<endl;
   cycles=0;
-  num_cycles=_params.find_integer(MEG_NUM_CYCLES,DEF_MEG_NUM_CYCLES);
+  num_cycles=_params.find<int>(MEG_NUM_CYCLES,DEF_MEG_NUM_CYCLES);
   cout<<"MEGenerator num_cycles="<<std::dec<<num_cycles<<endl;
   registerAsPrimaryComponent();
   cout<<"MEGenerator registerd as primary"<<endl;
   primaryComponentDoNotEndSim();
   cout<<"MEGenerator do not end sim"<<endl;
-  std::string clock_string = _params.find_string(MEG_CLOCK,STR(DEF_MEG_CLOCK));
+  std::string clock_string = _params.find<std::string>(MEG_CLOCK,STR(DEF_MEG_CLOCK));
   registerClock(clock_string,
                 new SST::Clock::Handler<ThisType>(this,&ThisType::tic)
                );
@@ -61,7 +61,7 @@ MEGenerator::MEGenerator(SST::ComponentId_t _id,Params& _params)
                     );
   assert(link);
   cout<<"MEGenerator configured link"<<endl;
-  payload_size = _params.find_integer(MEG_DATA_SIZE,DEF_MEG_DATA_SIZE);
+  payload_size = _params.find<int>(MEG_DATA_SIZE,DEF_MEG_DATA_SIZE);
   cout<<"MEGenerator data size = "<<payload_size<<endl;
   data= new int[payload_size];
 }

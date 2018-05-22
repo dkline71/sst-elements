@@ -36,7 +36,7 @@ TLMSimpleMem::TLMSimpleMem(Component* _component,
     out.fatal(CALL_INFO,-1,
               "Could not locate controller\n");
   memory_manager = new MemoryManager(&out);
-  is_polling = _params.find_integer(TLMSM_IS_POLLING,0);
+  is_polling = _params.find<int>(TLMSM_IS_POLLING,0);
   if(is_polling)
     response_handler = new RequestHandler_t(this,
                                             &ThisType::pollingResponseHandler);
@@ -44,21 +44,21 @@ TLMSimpleMem::TLMSimpleMem(Component* _component,
     response_handler = new RequestHandler_t(this,
                                             &ThisType::defaultResponseHandler);
 
-  acknowledge_request = _params.find_integer(TLMSM_ACKNOWLEDGE,0);
+  acknowledge_request = _params.find<int>(TLMSM_ACKNOWLEDGE,0);
   acknowledge_handler = new RequestHandler_t(this,
                                              &ThisType::defaultResponseHandler);
-  track_request_ids =         _params.find_integer(TLMSM_TRACK_ID   ,0 );
-  use_streaming_width_as_id = _params.find_integer(TLMSM_USE_SW_ID  ,0 );
-  streaming_width_id =        _params.find_integer(TLMSM_SW_ID      ,0 );
-  no_payload =                _params.find_integer(TLMSM_NO_PAYLOAD ,1 );
-  force_size =                _params.find_integer(TLMSM_FORCE_SIZE ,0 );
-  force_align =               _params.find_integer(TLMSM_FORCE_ALIGN,0 );
-  enforced_size =             _params.find_integer(TLMSM_SIZE       ,32);
-  check_size =                _params.find_integer(TLMSM_CHECK_SIZE ,0 );
-  check_align =               _params.find_integer(TLMSM_CHECK_ALIGN,0 );
+  track_request_ids =         _params.find<int>(TLMSM_TRACK_ID   ,0 );
+  use_streaming_width_as_id = _params.find<int>(TLMSM_USE_SW_ID  ,0 );
+  streaming_width_id =        _params.find<int>(TLMSM_SW_ID      ,0 );
+  no_payload =                _params.find<int>(TLMSM_NO_PAYLOAD ,1 );
+  force_size =                _params.find<int>(TLMSM_FORCE_SIZE ,0 );
+  force_align =               _params.find<int>(TLMSM_FORCE_ALIGN,0 );
+  enforced_size =             _params.find<int>(TLMSM_SIZE       ,32);
+  check_size =                _params.find<int>(TLMSM_CHECK_SIZE ,0 );
+  check_align =               _params.find<int>(TLMSM_CHECK_ALIGN,0 );
 
   //out.output("streaming_width_id = %d\n",streaming_width_id);
-  ignore_init_data =          _params.find_integer(TLMSM_IGNORE_INIT,0);
+  ignore_init_data =          _params.find<int>(TLMSM_IGNORE_INIT,0);
   proxy.socket.register_nb_transport_bw(this, &ThisType::handleBackward);
 }
 
@@ -108,7 +108,7 @@ void TLMSimpleMem::sendRequest(Request_t *_request){
     //(*response_handler)(updateRequest(*_request,*trans,true));
     //TODO: fix when HMC fixed
     if(track_request_ids)
-      id_map[_request->addr]=std::make_pair(_request->id,_request->groupId);
+      id_map[_request->addr]=_request->id;
     break;
   case tlm::TLM_ACCEPTED:
   case tlm::TLM_COMPLETED:
@@ -176,9 +176,7 @@ void TLMSimpleMem::callBack(Payload_t& _trans,
               "Error creating request\n");
   if(track_request_ids){
    // out.output("Mapping id for address = %x\nMap size = %d\n",request->addr,id_map.size());
-    IdPair_t ids=id_map[request->addr];
-    request->id=ids.first;
-    request->groupId=ids.second;
+    request->id=id_map[request->addr];
   }
   if(tlm::END_REQ == _phase){
     (*acknowledge_handler)(request);

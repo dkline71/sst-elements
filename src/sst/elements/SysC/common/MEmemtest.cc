@@ -43,13 +43,13 @@ MEMemTest::MEMemTest(SST::ComponentId_t _id,Params& _params)
 {
   cout<<"Constructing MEMemTest"<<endl;
   cycles=0;
-  num_cycles=_params.find_integer("num_cycles",100);
+  num_cycles=_params.find<int>("num_cycles",100);
   cout<<"MEMemTest num_cycles = "<<dec<<num_cycles<<endl;
   registerAsPrimaryComponent();
   cout<<"MEMemTest registerd as primary"<<endl;
   primaryComponentDoNotEndSim();
   cout<<"MEMemTest do not end sim"<<endl;
-  std::string clock_string=_params.find_string("clock","1MHz");
+  std::string clock_string=_params.find<std::string>("clock","1MHz");
   registerClock(clock_string,
                 new SST::Clock::Handler<ThisType_t>(this,&ThisType_t::tic)
                );
@@ -60,9 +60,9 @@ MEMemTest::MEMemTest(SST::ComponentId_t _id,Params& _params)
                     );
   assert(link);
   cout << "MEMemTest configured link" << endl;
-  payload_size = _params.find_integer("payload_size",32);
+  payload_size = _params.find<int>("payload_size",32);
   cout << "MEMemTest payload_size = " << payload_size << endl;
-  data_size = _params.find_integer("data_size",64);
+  data_size = _params.find<int>("data_size",64);
   cout << "MEMemTest data_size = " << data_size << endl;
   max_index = data_size-payload_size;
   cout << "MEMemTest max_index = " << max_index <<endl;

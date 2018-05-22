@@ -33,7 +33,7 @@ Adapter_base::Adapter_base(SST::Component *_comp,
 : out("In @p() at @f:@l: ",0,0,Output::STDOUT)
     , payload_queue(this,&ThisType::callBackProxy)
 {
-  out.setVerboseLevel(_params.find_integer(AD_VERBOSE,DEF_AD_VERBOSE));
+  out.setVerboseLevel(_params.find<int>(AD_VERBOSE,DEF_AD_VERBOSE));
   out.verbose(CALL_INFO,1,0,
               "Contructing Adapter_base, verbose = %d\n",out.getVerboseLevel());
   id=main_id++;

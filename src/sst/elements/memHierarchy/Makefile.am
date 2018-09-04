@@ -117,7 +117,9 @@ libmemHierarchy_la_SOURCES = \
 	Sieve/broadcastShim.h \
 	Sieve/broadcastShim.cc \
 	memNetBridge.h \
-	memNetBridge.cc
+	memNetBridge.cc \
+	multiPortShim.h \
+	multiPortShim.cc
 
 EXTRA_DIST = \
         Sieve/tests/StatisticOutput.csv.gold \
@@ -221,7 +223,7 @@ nobase_sst_HEADERS = \
 	memTypes.h
 
 libmemHierarchy_la_LDFLAGS = -module -avoid-version
-libmemHierarchy_la_LIBADD = 
+libmemHierarchy_la_LIBADD =
 
 if HAVE_RAMULATOR
 libmemHierarchy_la_LDFLAGS += $(RAMULATOR_LDFLAGS)

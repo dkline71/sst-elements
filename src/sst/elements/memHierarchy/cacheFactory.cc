@@ -245,10 +245,6 @@ void Cache::configureLinks(Params &params) {
     std::string opalShMem = params.find<std::string>("shared_memory", "0");
     std::string opalSize = params.find<std::string>("local_memory_size", "0");
 
-    Params shimParams = params.find_prefix_params("cacheShim." );
-    shimParams.find<std::string>("cache_link", "", found);
-    if (!found) shimParams.insert("cache_link", "low_network_0");
-
     Params nicParams = params.find_prefix_params("memNIC." );
     nicParams.insert("node", opalNode);
     nicParams.insert("shared_memory", opalShMem);
@@ -266,29 +262,32 @@ void Cache::configureLinks(Params &params) {
     cpulink.insert("shared_memory", opalShMem);
     cpulink.insert("local_memory_size", opalSize);
 
+    Params shimParams = params.find_prefix_params("cacheShim." );
+
+    if ( NULL != (cacheShim_ = dynamic_cast<MultiPortShim*>(loadNamedSubComponent("shim", shimParams))) ) {
+        out_->verbose(CALL_INFO, 1, 0, "Generator loaded successfully.\n");
+//         registerAsPrimaryComponent();
+//         primaryComponentDoNotEndSim();
+    }
+
+//     if (nullptr == (cacheShim_ = dynamic_cast<CustomCmdMemHandler*>(loadNamedSubComponent("shim")))) {
+//         std::string customHandlerName = params.find<std::string>("customCmdHandler", "");
+//         if (customHandlerName != "") {
+//             customCommandHandler_ = dynamic_cast<CustomCmdMemHandler*>(loadSubComponent(customHandlerName, this, params));
+//         }
+//     }
+
     /* Finally configure the links */
     if (highNetExists && lowNetExists) {
 
-        shimParams.find<std::string>("num_ports", "", found);
-        if (!found) {
-            d_->debug(_INFO_,"Configuring cache with a direct link above and below\n");
+        d_->debug(_INFO_,"Configuring cache with a direct link above and below\n");
 
-            linkDown_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MemLink", this, memlink));
-            linkDown_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
+        linkDown_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MemLink", this, memlink));
+        linkDown_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
 
-            linkUp_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MemLink", this, cpulink));
-            linkUp_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
-            clockLink_ = false; /* Currently only linkDown_ may need to be clocked */
-        } else {
-            d_->debug(_INFO_,"Configuring cache with a direct link above and a shim below\n");
-
-            linkDown_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MultiPortShim", this, shimParams));
-            linkDown_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
-
-            linkUp_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MemLink", this, cpulink));
-            linkUp_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
-            clockLink_ = false; /* Currently only linkDown_ may need to be clocked */
-        }
+        linkUp_ = dynamic_cast<MemLinkBase*>(loadSubComponent("memHierarchy.MemLink", this, cpulink));
+        linkUp_->setRecvHandler(new Event::Handler<Cache>(this, &Cache::processIncomingEvent));
+        clockLink_ = false; /* Currently only linkDown_ may need to be clocked */
 
     } else if (highNetExists && lowCacheExists) {
 

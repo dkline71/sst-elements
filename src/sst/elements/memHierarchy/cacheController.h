@@ -41,6 +41,7 @@
 #include "sst/elements/memHierarchy/util.h"
 #include "sst/elements/memHierarchy/cacheListener.h"
 #include "sst/elements/memHierarchy/memLinkBase.h"
+#include "sst/elements/memHierarchy/multiPortShim.h"
 
 namespace SST { namespace MemHierarchy {
 
@@ -157,6 +158,9 @@ public:
             {"Inv_recv",                "Event received: Inv", "count", 2},
             {"NACK_recv",               "Event: NACK received", "count", 2})
 
+    SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+            {"shim", "Optional shim for traffic interception", "SST::MemHierarchy::CacheShim"})
+
 /* Class definition */
     typedef CacheArray::CacheLine           CacheLine;
     typedef CacheArray::DataLine            DataLine;
@@ -181,6 +185,8 @@ public:
     /* Debug/fatal */
     void printStatus(Output & out); // Called on SIGUSR2
     void emergencyShutdown();       // Called on output.fatal(), (SIGINT/SIGTERM)
+
+    MultiPortShim* cacheShim_;
 
 private:
     /** Constructor helper methods */

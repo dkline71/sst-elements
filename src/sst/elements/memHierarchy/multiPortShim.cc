@@ -33,7 +33,7 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(pare
 
     // Setup Links
     if (isPortConnected("cache_link")) {
-        cacheLink_ = configureLink("cache_link", "50ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleRequest));
+        cacheLink_ = configureLink("cache_link", "0ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleRequest));
     } else {
         out_.fatal(CALL_INFO, -1, "%s, Error: no connected low_network_0 port. Please connect a cache to port 'low_network_0'\n", getName().c_str());
     }
@@ -42,7 +42,7 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(pare
     std::string linkname = "port_0";
     int linkid = 0;
     while (isPortConnected(linkname)) {
-        SST::Link * link = configureLink(linkname, "50ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleResponse));
+        SST::Link * link = configureLink(linkname, "0ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleResponse));
         highNetPorts_.push_back(link);
         linkid++;
         linkname = "port_" + std::to_string(linkid);
@@ -50,22 +50,19 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(pare
 }
 
 void MultiPortShim::handleRequest(SST::Event * ev) {
-    MemEvent* event = static_cast<MemEvent*>(ev);
+    MemEvent* event = static_cast< MemEvent* >(ev);
     Addr memAddr = event->getAddr();
 
     std::cout << "REQUEST " << std::endl;
 
-//     cacheLink_->send(event);
     highNetPorts_[0]->send(event);
 }
 
 void MultiPortShim::handleResponse(SST::Event * ev) {
-    MemEvent* event = static_cast<MemEvent*>(ev);
+    MemEvent* event = static_cast< MemEvent* >(ev);
     Addr memAddr = event->getAddr();
 
     std::cout << "RESPONSE " << std::endl;
 
     cacheLink_->send(event);
-//     highNetPorts_[0]->send(event);
-
 }

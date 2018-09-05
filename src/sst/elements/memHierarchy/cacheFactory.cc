@@ -264,18 +264,10 @@ void Cache::configureLinks(Params &params) {
 
     Params shimParams = params.find_prefix_params("cacheShim." );
 
+    // There is no fallback if the shim isn't loaded as a named subcomponent
     if ( NULL != (cacheShim_ = dynamic_cast<MultiPortShim*>(loadNamedSubComponent("shim", shimParams))) ) {
-        out_->verbose(CALL_INFO, 1, 0, "Generator loaded successfully.\n");
-//         registerAsPrimaryComponent();
-//         primaryComponentDoNotEndSim();
+        out_->verbose(CALL_INFO, 1, 0, "Shim loaded successfully.\n");
     }
-
-//     if (nullptr == (cacheShim_ = dynamic_cast<CustomCmdMemHandler*>(loadNamedSubComponent("shim")))) {
-//         std::string customHandlerName = params.find<std::string>("customCmdHandler", "");
-//         if (customHandlerName != "") {
-//             customCommandHandler_ = dynamic_cast<CustomCmdMemHandler*>(loadSubComponent(customHandlerName, this, params));
-//         }
-//     }
 
     /* Finally configure the links */
     if (highNetExists && lowNetExists) {

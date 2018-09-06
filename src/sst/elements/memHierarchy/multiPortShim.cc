@@ -27,9 +27,10 @@ using namespace SST::MemHierarchy;
 
 MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(parent, params) {
 
-    std::string linkName = params.find<std::string>("cache_link", "");
+    lineSize_ = params.find< uint64_t >("line_size", 64);
+    numPorts_ = params.find< uint64_t >("cacheShim.num_ports", 1);
 
-    std::cout << "-------- MultiPortShim (" << getName() << ") --------\n" << std::endl;
+    std::cout << "-------- MultiPortShim (" << getName() << "), " << lineSize_ << " " << numPorts_ << " --------\n" << std::endl;
 
     // Setup Links
     if (isPortConnected("cache_link")) {
@@ -50,19 +51,31 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(pare
 }
 
 void MultiPortShim::handleRequest(SST::Event * ev) {
-    MemEvent* event = static_cast< MemEvent* >(ev);
-    Addr memAddr = event->getAddr();
 
-    std::cout << "REQUEST " << std::endl;
+    MemEvent* event = static_cast< MemEvent* >(ev);
+    volatile Addr memAddr = event->getAddr();
+
+    volatile uint32_t portNumber;
+    portNumber = getPortNum(memAddr);
+
+    dbg_.debug(_L4_,"FWD (%s) from %s. event: (%s)\n", this->getName().c_str(), event->getSrc().c_str(), event->getBriefString().c_str());
 
     highNetPorts_[0]->send(event);
 }
 
 void MultiPortShim::handleResponse(SST::Event * ev) {
+
     MemEvent* event = static_cast< MemEvent* >(ev);
     Addr memAddr = event->getAddr();
 
-    std::cout << "RESPONSE " << std::endl;
+    dbg_.debug(_L4_,"FWD (%s) to %s. event: (%s)\n", this->getName().c_str(), event->getDst().c_str(), event->getBriefString().c_str());
 
     cacheLink_->send(event);
 }
+
+
+
+
+
+
+

@@ -24,6 +24,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/elementinfo.h>
 
+#include "sst/elements/memHierarchy/util.h"
 
 
 namespace SST {
@@ -40,9 +41,9 @@ public:
     CacheShim(Component* comp, Params &params) : SubComponent(comp) {
         out_.init("", 1, 0, Output::STDOUT);
 
-        int debugLevel = params.find<int>("debug_level", 0);
-        int debugLoc = params.find<int>("debug", 0);
-        dbg_.init("", debugLevel, 0, (Output::output_location_t)debugLoc);
+        int debugLevel = params.find<int>("cacheShim.debug_level", 0);
+        int debugLoc = params.find<int>("cacheShim.debug", 0);
+        dbg_.init("--->  ", debugLevel, 0, (Output::output_location_t)debugLoc);
     }
 
     ~CacheShim() { }
@@ -58,7 +59,8 @@ public:
 /* Element Library Info */
 #define MULTIPORTSHIM_ELI_PARAMS CACHESHIM_ELI_PARAMS, \
             {"num_ports",           "(uint) Number of ports.", "1"},\
-            {"cache_link",          "(string) Set by parent component. Name of port connected to cache.", ""}
+            {"cache_link",          "(string) Set by parent component. Name of port connected to cache.", ""}, \
+            {"line_size",           "(uint) Set by parent component. Size of cache line.", ""}
 
     SST_ELI_REGISTER_SUBCOMPONENT(MultiPortShim, "memHierarchy", "MultiPortShim", SST_ELI_ELEMENT_VERSION(1,0,0),
             "Used to provide a cache with multiple ports.", "SST::CacheShim")
@@ -73,14 +75,19 @@ public:
     ~MultiPortShim() { }
 
 private:
-    std::vector<SST::Link*>         highNetPorts_;
-    std::vector<SST::Link*>         lowNetPorts_;
+    uint64_t lineSize_;
+    uint64_t numPorts_;
 
     SST::Link* cacheLink_;
+    std::vector<SST::Link*> highNetPorts_;
 
     // Event handlers
     void handleResponse(SST::Event *event);
     void handleRequest(SST::Event *event);
+
+    // Address & port handlers
+    Addr toBaseAddr(Addr addr) { return (addr) & ~(lineSize_ - 1); }
+    uint64_t getPortNum(Addr addr) { return (addr >> log2Of(lineSize_)) % numPorts_; }
 
 };
 

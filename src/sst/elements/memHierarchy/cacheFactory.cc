@@ -262,9 +262,9 @@ void Cache::configureLinks(Params &params) {
     cpulink.insert("shared_memory", opalShMem);
     cpulink.insert("local_memory_size", opalSize);
 
-    Params shimParams = params.find_prefix_params("cacheShim." );
-
     // There is no fallback if the shim isn't loaded as a named subcomponent
+    Params shimParams = params.find_prefix_params("cacheShim." );
+    shimParams.insert("line_size", params.find<std::string>("cache_line_size", "128"));
     if ( NULL != (cacheShim_ = dynamic_cast<MultiPortShim*>(loadNamedSubComponent("shim", shimParams))) ) {
         out_->verbose(CALL_INFO, 1, 0, "Shim loaded successfully.\n");
     }

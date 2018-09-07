@@ -25,6 +25,7 @@
 #include <sst/core/elementinfo.h>
 
 #include "sst/elements/memHierarchy/util.h"
+#include "sst/elements/memHierarchy/memEventBase.h"
 
 
 namespace SST {
@@ -48,9 +49,24 @@ public:
 
     ~CacheShim() { }
 
+//     /* Initialization functions for parent */
+//     virtual void setRecvHandler(Event::HandlerBase * handler) { recvHandler = handler; }
+//     virtual void init(unsigned int UNUSED(phase)) { }
+//     virtual void finish() { }
+//     virtual void setup() { }
+
+//     /* Send and receive functions for MemLink */
+//     virtual void sendInitData(MemEventInit * ev) =0;
+//     virtual MemEventInit* recvInitData() =0;
+//     virtual void send(MemEventBase * ev) =0;
+
 protected:
+    // IO Streams
     Output dbg_;
     Output out_;
+
+    // Handlers
+    SST::Event::HandlerBase * recvHandler; // Event handler to call when an event is received
 
 };
 
@@ -73,6 +89,13 @@ public:
 
     MultiPortShim(Component* comp, Params &params);
     ~MultiPortShim() { }
+
+    // Init functions
+    void init(unsigned int phase);
+
+    void sendInitData(MemEventInit * ev);
+    MemEventInit* recvInitData();
+    void send(MemEventBase * ev);
 
 private:
     uint64_t lineSize_;

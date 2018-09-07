@@ -50,6 +50,47 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : CacheShim(pare
     }
 }
 
+void MultiPortShim::init(unsigned int phase) {
+    volatile SST::Event *ev;
+//
+    for (int i = 0; i < highNetPorts_.size(); i++) {
+        while ((ev = highNetPorts_[i]->recvInitData())) {
+//             MemEventInit* memEvent = dynamic_cast<MemEventInit*>(ev);
+//
+//             if (memEvent && memEvent->getCmd() == Command::NULLCMD) {
+//                 dbg_.debug(_L10_, "bus %s broadcasting upper event to lower ports (%d): %s\n", getName().c_str(), numLowNetPorts_, memEvent->getVerboseString().c_str());
+//                 mapNodeEntry(memEvent->getSrc(), highNetPorts_[i]->getId());
+//                 for (int k = 0; k < numLowNetPorts_; k++)
+//                     lowNetPorts_[k]->sendInitData(memEvent->clone());
+//             } else if (memEvent) {
+//                 dbg_.debug(_L10_, "bus %s broadcasting upper event to lower ports (%d): %s\n", getName().c_str(), numLowNetPorts_, memEvent->getVerboseString().c_str());
+//                 for (int k = 0; k < numLowNetPorts_; k++)
+//                     lowNetPorts_[k]->sendInitData(memEvent->clone());
+//             }
+//             delete memEvent;
+        }
+    }
+//
+//     for (int i = 0; i < numLowNetPorts_; i++) {
+//         while ((ev = lowNetPorts_[i]->recvInitData())) {
+//             MemEventInit* memEvent = dynamic_cast<MemEventInit*>(ev);
+//             if (!memEvent) delete memEvent;
+//             else if (memEvent->getCmd() == Command::NULLCMD) {
+//                 dbg_.debug(_L10_, "bus %s broadcasting lower event to upper ports (%d): %s\n", getName().c_str(), numHighNetPorts_, memEvent->getVerboseString().c_str());
+//                 mapNodeEntry(memEvent->getSrc(), lowNetPorts_[i]->getId());
+//                 for (int i = 0; i < numHighNetPorts_; i++) {
+//                     highNetPorts_[i]->sendInitData(memEvent->clone());
+//                 }
+//                 delete memEvent;
+//             }
+//             else{
+//                 /*Ignore responses */
+//                 delete memEvent;
+//             }
+//         }
+//     }
+}
+
 void MultiPortShim::handleRequest(SST::Event * ev) {
 
     MemEvent* event = static_cast< MemEvent* >(ev);
@@ -61,6 +102,8 @@ void MultiPortShim::handleRequest(SST::Event * ev) {
     dbg_.debug(_L4_,"FWD (%s) from %s. event: (%s)\n", this->getName().c_str(), event->getSrc().c_str(), event->getBriefString().c_str());
 
     highNetPorts_[0]->send(event);
+
+    delete ev;
 }
 
 void MultiPortShim::handleResponse(SST::Event * ev) {
@@ -71,6 +114,8 @@ void MultiPortShim::handleResponse(SST::Event * ev) {
     dbg_.debug(_L4_,"FWD (%s) to %s. event: (%s)\n", this->getName().c_str(), event->getDst().c_str(), event->getBriefString().c_str());
 
     cacheLink_->send(event);
+
+    delete ev;
 }
 
 

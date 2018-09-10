@@ -63,8 +63,9 @@ libmemHierarchy_la_SOURCES = \
 	memLinkBase.h \
 	memLink.h \
 	memLink.cc \
-	memNIC.h \
+	memNICBase.h \
 	memNIC.cc \
+	memNIC.h \
 	memNICFour.h \
 	memNICFour.cc \
 	customcmd/customCmdEvent.h \
@@ -116,10 +117,11 @@ libmemHierarchy_la_SOURCES = \
 	Sieve/sieveFactory.cc \
 	Sieve/broadcastShim.h \
 	Sieve/broadcastShim.cc \
+	Sieve/alloctrackev.h \
+	Sieve/memmgr_sieve.cc \
+	Sieve/memmgr_sieve.h \
 	memNetBridge.h \
-	memNetBridge.cc \
-	multiPortShim.h \
-	multiPortShim.cc
+	memNetBridge.cc
 
 EXTRA_DIST = \
         Sieve/tests/StatisticOutput.csv.gold \
@@ -190,7 +192,8 @@ sstdir = $(includedir)/sst/elements/memHierarchy
 nobase_sst_HEADERS = \
 	memEventBase.h \
 	memEvent.h \
-	memNIC.h \
+	memNICBase.h \
+	memNIC.h
 	memNICFour.h \
 	memLink.h \
 	memLinkBase.h \
@@ -223,7 +226,7 @@ nobase_sst_HEADERS = \
 	memTypes.h
 
 libmemHierarchy_la_LDFLAGS = -module -avoid-version
-libmemHierarchy_la_LIBADD =
+libmemHierarchy_la_LIBADD = 
 
 if HAVE_RAMULATOR
 libmemHierarchy_la_LDFLAGS += $(RAMULATOR_LDFLAGS)

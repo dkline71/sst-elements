@@ -59,7 +59,6 @@ public:
             {"interleave_size",     "(string) Size of interleaved chunks. E.g., to interleave 8B chunks among 3 memories, set size=8B, step=24B", "0B"},\
             {"interleave_step",     "(string) Distance between interleaved chunks. E.g., to interleave 8B chunks among 3 memories, set size=8B, step=24B", "0B"},\
             {"customCmdMemHandler", "(string) Name of the custom command handler to load", ""},\
-            {"node",					"Node number in multinode environment"},\
             /* Old parameters - deprecated or moved */\
             {"do_not_back",         "DEPRECATED. Use parameter 'backing' instead.", "0"}, /* Remove 9.0 */\
             {"network_num_vc",      "DEPRECATED. Number of virtual channels (VCs) on the on-chip network. memHierarchy only uses one VC.", "1"}, /* Remove 9.0 */\
@@ -74,16 +73,14 @@ public:
     SST_ELI_DOCUMENT_PARAMS( MEMCONTROLLER_ELI_PARAMS )
 
 #define MEMCONTROLLER_ELI_PORTS {"direct_link", "Direct connection to a cache/directory controller", {"memHierarchy.MemEventBase"} },\
-            {"network",     "Network connection to a cache/directory controller; also request network for split networks", {"memHierarchy.MemRtrEvent"} },\
-            {"network_ack", "For split networks, ack/response network connection to a cache/directory controller", {"memHierarchy.MemRtrEvent"} },\
-            {"network_fwd", "For split networks, forward request network connection to a cache/directory controller", {"memHierarchy.MemRtrEvent"} },\
-            {"network_data","For split networks, data network connection to a cache/directory controller", {"memHierarchy.MemRtrEvent"} },\
+            {"network",     "Network connection to a cache/directory controller", {"memHierarchy.MemRtrEvent"} },\
             {"cube_link",   "DEPRECATED. Use named subcomponents and their links instead.", {"sst.Event"} }
 
     SST_ELI_DOCUMENT_PORTS( MEMCONTROLLER_ELI_PORTS )
     
 
-#define MEMCONTROLLER_ELI_SUBCOMPONENTSLOTS {"backendConvertor", "Convertor to translate incoming memory events for the backend", "SST::MemHierarchy::MemBackendConvertor"},\
+#define MEMCONTROLLER_ELI_SUBCOMPONENTSLOTS {"cpulink", "Link manager for link to memory hierarchy", "SST::MemHierarchy::MemLinkBase"}, \
+            {"backendConvertor", "Convertor to translate incoming memory events for the backend", "SST::MemHierarchy::MemBackendConvertor"},\
             {"customCmdHandler", "Optional handler for custom command types", "SST::MemHierarchy::CustomCmdMemHandler"} 
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS( MEMCONTROLLER_ELI_SUBCOMPONENTSLOTS )

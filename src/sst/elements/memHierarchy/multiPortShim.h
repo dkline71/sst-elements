@@ -38,22 +38,21 @@ class MultiPortShim : public MemLinkBase {
 public:
 /* Element Library Info */
 #define MULTIPORTSHIM_ELI_PARAMS MEMLINKBASE_ELI_PARAMS, \
-            {"num_ports",           "(uint) Number of ports.", "1"},\
-            {"cache_link",          "(string) Set by parent component. Name of port connected to cache.", ""}, \
-            {"line_size",           "(uint) Set by parent component. Size of cache line.", "64"}
+        {"num_ports",           "(uint) Number of ports.", "1"},\
+        {"mem_link",            "(string) Set by parent component. Name of port connected to memory.", ""}, \
+        {"line_size",           "(uint) Set by parent component. Size of cache line.", "64"}
 
     SST_ELI_REGISTER_SUBCOMPONENT(MultiPortShim, "memHierarchy", "MultiPortShim", SST_ELI_ELEMENT_VERSION(1,0,0),
-            "Used to provide a cache with multiple ports.", "SST::MemLinkBase")
+                                  "Used to provide a cache with multiple ports.", "SST::MemLinkBase")
 
     SST_ELI_DOCUMENT_PARAMS( MULTIPORTSHIM_ELI_PARAMS )
 
     SST_ELI_DOCUMENT_PORTS(
-          {"cache_link", "Link to cache", {"memHierarchy.MemEventBase"} },
-          {"port_%(port)d", "Links to network", {"memHierarchy.MemEventBase"} } )
+        {"port_%(port)d", "Links to memory", {"memHierarchy.MemEventBase"} } )
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
-            {"cpulink", "CPU-side link manager; for single-link caches use this one only", "SST::MemHierarchy::MemLinkBase"},
-            {"memlink", "Memory-side link manager", "SST::MemHierarchy::MemLinkBase"})
+        {"cpulink", "CPU-side link manager; for single-link caches use this one only", "SST::MemHierarchy::MemLinkBase"},
+        {"memlink", "Memory-side link manager", "SST::MemHierarchy::MemLinkBase"})
 
     MultiPortShim(Component* comp, Params &params);
     ~MultiPortShim() { }
@@ -68,11 +67,12 @@ public:
     MemEventBase * recv();
 
 private:
+    Output out_;
+
     uint64_t lineSize_;
     uint64_t numPorts_;
 
-    SST::Link* cacheLink_;
-    std::vector<SST::Link*> highNetPorts_;
+    std::vector< SST::Link* > links_;
 
     // Event handlers
     void handleResponse(SST::Event *event);

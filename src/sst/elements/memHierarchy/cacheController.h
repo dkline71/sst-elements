@@ -41,6 +41,7 @@
 #include "sst/elements/memHierarchy/util.h"
 #include "sst/elements/memHierarchy/cacheListener.h"
 #include "sst/elements/memHierarchy/memLinkBase.h"
+#include "sst/elements/memHierarchy/multiPortShim.h"
 
 namespace SST { namespace MemHierarchy {
 
@@ -153,7 +154,7 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
             {"cpulink", "CPU-side link manager; for single-link caches use this one only", "SST::MemHierarchy::MemLinkBase"},
             {"memlink", "Memory-side link manager", "SST::MemHierarchy::MemLinkBase"},
-            {"shim", "Optional shim for traffic interception", "SST::MemHierarchy::CacheShim"})
+            {"shim", "Optional shim for traffic interception", "SST::MemHierarchy::MemLinkBase"})
 
 /* Class definition */
     typedef CacheArray::CacheLine           CacheLine;

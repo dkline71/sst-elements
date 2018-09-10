@@ -26,129 +26,106 @@ using namespace SST;
 using namespace SST::MemHierarchy;
 
 MultiPortShim::MultiPortShim(Component* parent, Params &params) : MemLinkBase(parent, params) {
+    out_.init("", 1, 0, Output::STDOUT);
 
     lineSize_ = params.find< uint64_t >("line_size", 64);
     numPorts_ = params.find< uint64_t >("cacheShim.num_ports", 1);
 
-//     std::cout << "-------- MultiPortShim (" << getName() << "), " << lineSize_ << " " << numPorts_ << " --------\n" << std::endl;
-//
-//     // Setup Links
-//     if (isPortConnected("cache_link")) {
-//         cacheLink_ = configureLink("cache_link", "0ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleRequest));
-//     } else {
-//         out_.fatal(CALL_INFO, -1, "%s, Error: no connected low_network_0 port. Please connect a cache to port 'low_network_0'\n", getName().c_str());
-//     }
-//
-//     if (!isPortConnected("port_0")) out_.fatal(CALL_INFO, -1, "%s, Error: no connected CPU ports. Please connect a CPU to port 'thread0'.\n", getName().c_str());
-//     std::string linkname = "port_0";
-//     int linkid = 0;
-//     while (isPortConnected(linkname)) {
-//         SST::Link * link = configureLink(linkname, "0ps", new Event::Handler< MultiPortShim >(this, &MultiPortShim::handleResponse));
-//         highNetPorts_.push_back(link);
-//         linkid++;
-//         linkname = "port_" + std::to_string(linkid);
-//     }
+    std::cout << "-------- MultiPortShim (" << getName() << "), " << lineSize_ << " " << numPorts_ << " --------\n" << std::endl;
+
+    // Configure link
+    std::string latency = params.find<std::string>("latency", "50ps");
+    std::string port = params.find<std::string>("port", "port");
+
+    std::string linkname;
+    for( auto i = 0; i < numPorts_; i++ ) {
+        linkname = "port_" + std::to_string(i);
+        SST::Link* link = configureLink(linkname, latency, new Event::Handler< MultiPortShim >(this, &MultiPortShim::recvNotify));
+
+        if (!link) {
+            dbg.fatal(CALL_INFO, -1, "%s MemLink: Unable to configure link on port '%s'\n", getName().c_str(), port.c_str());
+        }
+
+        dbg.debug(_L10_, "%s memLink info is: Name: %s, addr: %" PRIu64 ", id: %" PRIu32 "\n",
+                getName().c_str(), info.name.c_str(), info.addr, info.id);
+
+        links_.push_back(link);
+    }
 }
 
 void MultiPortShim::init(unsigned int phase) {
-    volatile SST::Event *ev;
-//
-//     for (int i = 0; i < highNetPorts_.size(); i++) {
-//         while ((ev = highNetPorts_[i]->recvInitData())) {
-//             MemEventInit* memEvent = dynamic_cast<MemEventInit*>(ev);
-//
-//             if (memEvent && memEvent->getCmd() == Command::NULLCMD) {
-//                 dbg_.debug(_L10_, "bus %s broadcasting upper event to lower ports (%d): %s\n", getName().c_str(), numLowNetPorts_, memEvent->getVerboseString().c_str());
-//                 mapNodeEntry(memEvent->getSrc(), highNetPorts_[i]->getId());
-//                 for (int k = 0; k < numLowNetPorts_; k++)
-//                     lowNetPorts_[k]->sendInitData(memEvent->clone());
-//             } else if (memEvent) {
-//                 dbg_.debug(_L10_, "bus %s broadcasting upper event to lower ports (%d): %s\n", getName().c_str(), numLowNetPorts_, memEvent->getVerboseString().c_str());
-//                 for (int k = 0; k < numLowNetPorts_; k++)
-//                     lowNetPorts_[k]->sendInitData(memEvent->clone());
-//             }
-//             delete memEvent;
-//         }
-//     }
-//
-//     for (int i = 0; i < numLowNetPorts_; i++) {
-//         while ((ev = lowNetPorts_[i]->recvInitData())) {
-//             MemEventInit* memEvent = dynamic_cast<MemEventInit*>(ev);
-//             if (!memEvent) delete memEvent;
-//             else if (memEvent->getCmd() == Command::NULLCMD) {
-//                 dbg_.debug(_L10_, "bus %s broadcasting lower event to upper ports (%d): %s\n", getName().c_str(), numHighNetPorts_, memEvent->getVerboseString().c_str());
-//                 mapNodeEntry(memEvent->getSrc(), lowNetPorts_[i]->getId());
-//                 for (int i = 0; i < numHighNetPorts_; i++) {
-//                     highNetPorts_[i]->sendInitData(memEvent->clone());
-//                 }
-//                 delete memEvent;
-//             }
-//             else{
-//                 /*Ignore responses */
-//                 delete memEvent;
-//             }
-//         }
-//     }
+    SST::Event * ev;
+
+    for( auto i = 0; i < numPorts_; i++ ) {
+        while ((ev = links_[i]->recvInitData())) {
+            MemEventInit * mEv = dynamic_cast<MemEventInit*>(ev);
+            if (mEv) {
+                if (mEv->getInitCmd() == MemEventInit::InitCommand::Region) {
+                    MemEventInitRegion * mEvRegion = static_cast<MemEventInitRegion*>(mEv);
+                    dbg.debug(_L10_, "%s received init message: %s\n", getName().c_str(), mEvRegion->getVerboseString().c_str());
+
+                    EndpointInfo epInfo;
+                    epInfo.name = mEvRegion->getSrc();
+                    epInfo.addr = 0;
+                    epInfo.id = 0;
+                    epInfo.region = mEvRegion->getRegion();
+                    addSource(epInfo);
+                    addDest(epInfo);
+
+                    if (mEvRegion->getSetRegion() && acceptRegion) {
+                        dbg.debug(_L10_, "\tUpdating local region\n");
+                        info.region = mEvRegion->getRegion();
+                    }
+                    delete ev;
+                } else { /* No need to filter by source since this is a direct link */
+                    initReceiveQ.push(mEv);
+                }
+            } else
+                delete ev;
+        }
+    }
 }
 
 
 void MultiPortShim::sendInitData(MemEventInit * event) {
-    dbg.debug(_L10_, "%s sending init message: %s\n", getName().c_str(), event->getVerboseString().c_str());
-//     link->sendInitData(event);
+    for( auto i = 0; i < numPorts_; i++ ) {
+        dbg.debug(_L10_, "%s sending init message: %s\n", getName().c_str(), event->getVerboseString().c_str());
+        links_[i]->sendInitData(event);
+    }
 }
 
 
 MemEventInit* MultiPortShim::recvInitData() {
     MemEventInit * me = nullptr;
-//     if (!initReceiveQ.empty()) {
-//         me = initReceiveQ.front();
-//         initReceiveQ.pop();
-//     }
+    if (!initReceiveQ.empty()) {
+        me = initReceiveQ.front();
+        initReceiveQ.pop();
+    }
+
     return me;
 }
 
 
 void MultiPortShim::send(MemEventBase *ev) {
-//     link->send(ev);
+    for( auto i = 0; i < numPorts_; i++ ) {
+        dbg.debug(_L4_,"SEND (%s). event: (%s)\n", getName().c_str(), ev->getBriefString().c_str());
+        links_[i]->send(ev);
+    }
 }
 
 
 MemEventBase* MultiPortShim::recv() {
-//     SST::Event * ev = link->recv();
-//     MemEventBase * mEv = dynamic_cast<MemEventBase*>(ev);
-//     if (mEv) return mEv;
-//
-//     if (ev) delete ev;
+    SST::Event * ev = links_[0]->recv();
+
+    MemEventBase * mEv = dynamic_cast<MemEventBase*>(ev);
+    if (mEv) return mEv;
+
+    if (ev) delete ev;
 
     return nullptr;
 }
 
-void MultiPortShim::handleRequest(SST::Event * ev) {
 
-    MemEvent* event = static_cast< MemEvent* >(ev);
-    volatile Addr memAddr = event->getAddr();
-
-    volatile uint32_t portNumber;
-    portNumber = getPortNum(memAddr);
-
-    dbg.debug(_L4_,"FWD (%s) from %s. event: (%s)\n", this->getName().c_str(), event->getSrc().c_str(), event->getBriefString().c_str());
-
-    highNetPorts_[0]->send(event);
-
-    delete ev;
-}
-
-void MultiPortShim::handleResponse(SST::Event * ev) {
-
-    MemEvent* event = static_cast< MemEvent* >(ev);
-    Addr memAddr = event->getAddr();
-
-    dbg.debug(_L4_,"FWD (%s) to %s. event: (%s)\n", this->getName().c_str(), event->getDst().c_str(), event->getBriefString().c_str());
-
-    cacheLink_->send(event);
-
-    delete ev;
-}
 
 
 

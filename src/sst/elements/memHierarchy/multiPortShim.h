@@ -25,61 +25,25 @@
 #include <sst/core/elementinfo.h>
 
 #include "sst/elements/memHierarchy/util.h"
+#include "sst/elements/memHierarchy/memTypes.h"
+#include "sst/elements/memHierarchy/memEvent.h"
 #include "sst/elements/memHierarchy/memEventBase.h"
+#include "sst/elements/memHierarchy/memLinkBase.h"
 
 
 namespace SST {
 namespace MemHierarchy {
 
-class CacheShim : public SST::SubComponent {
-
+class MultiPortShim : public MemLinkBase {
 public:
 /* Element Library Info */
-#define CACHESHIM_ELI_PARAMS \
-    { "debug",              "(int) Where to print debug output. Options: 0[no output], 1[stdout], 2[stderr], 3[file]", "0"},\
-    { "debug_level",        "(int) Debug verbosity level. Between 0 and 10", "0"}
-
-    CacheShim(Component* comp, Params &params) : SubComponent(comp) {
-        out_.init("", 1, 0, Output::STDOUT);
-
-        int debugLevel = params.find<int>("cacheShim.debug_level", 0);
-        int debugLoc = params.find<int>("cacheShim.debug", 0);
-        dbg_.init("--->  ", debugLevel, 0, (Output::output_location_t)debugLoc);
-    }
-
-    ~CacheShim() { }
-
-//     /* Initialization functions for parent */
-//     virtual void setRecvHandler(Event::HandlerBase * handler) { recvHandler = handler; }
-//     virtual void init(unsigned int UNUSED(phase)) { }
-//     virtual void finish() { }
-//     virtual void setup() { }
-
-//     /* Send and receive functions for MemLink */
-//     virtual void sendInitData(MemEventInit * ev) =0;
-//     virtual MemEventInit* recvInitData() =0;
-//     virtual void send(MemEventBase * ev) =0;
-
-protected:
-    // IO Streams
-    Output dbg_;
-    Output out_;
-
-    // Handlers
-    SST::Event::HandlerBase * recvHandler; // Event handler to call when an event is received
-
-};
-
-class MultiPortShim : public CacheShim {
-public:
-/* Element Library Info */
-#define MULTIPORTSHIM_ELI_PARAMS CACHESHIM_ELI_PARAMS, \
+#define MULTIPORTSHIM_ELI_PARAMS MEMLINKBASE_ELI_PARAMS, \
             {"num_ports",           "(uint) Number of ports.", "1"},\
             {"cache_link",          "(string) Set by parent component. Name of port connected to cache.", ""}, \
-            {"line_size",           "(uint) Set by parent component. Size of cache line.", ""}
+            {"line_size",           "(uint) Set by parent component. Size of cache line.", "64"}
 
     SST_ELI_REGISTER_SUBCOMPONENT(MultiPortShim, "memHierarchy", "MultiPortShim", SST_ELI_ELEMENT_VERSION(1,0,0),
-            "Used to provide a cache with multiple ports.", "SST::CacheShim")
+            "Used to provide a cache with multiple ports.", "SST::MemLinkBase")
 
     SST_ELI_DOCUMENT_PARAMS( MULTIPORTSHIM_ELI_PARAMS )
 
@@ -87,15 +51,21 @@ public:
           {"cache_link", "Link to cache", {"memHierarchy.MemEventBase"} },
           {"port_%(port)d", "Links to network", {"memHierarchy.MemEventBase"} } )
 
+    SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+            {"cpulink", "CPU-side link manager; for single-link caches use this one only", "SST::MemHierarchy::MemLinkBase"},
+            {"memlink", "Memory-side link manager", "SST::MemHierarchy::MemLinkBase"})
+
     MultiPortShim(Component* comp, Params &params);
     ~MultiPortShim() { }
 
-    // Init functions
+    /* Initialization functions for parent */
     void init(unsigned int phase);
 
+    /* Send and receive functions for MemLink */
     void sendInitData(MemEventInit * ev);
     MemEventInit* recvInitData();
     void send(MemEventBase * ev);
+    MemEventBase * recv();
 
 private:
     uint64_t lineSize_;

@@ -68,7 +68,8 @@ libmemHierarchy_la_SOURCES = \
 	memNIC.h \
 	memNICFour.h \
 	memNICFour.cc \
-	cacheShim.h \
+	multiPortShim.h \
+	multiPortShim.cc \
 	customcmd/customCmdEvent.h \
 	customcmd/customCmdMemory.h \
 	customcmd/customOpCodeCmd.h \
@@ -194,10 +195,11 @@ nobase_sst_HEADERS = \
 	memEventBase.h \
 	memEvent.h \
 	memNICBase.h \
-	memNIC.h
+	memNIC.h \
 	memNICFour.h \
 	memLink.h \
 	memLinkBase.h \
+	multiPortShim.h \
 	memHierarchyInterface.h \
 	memHierarchyScratchInterface.h \
 	customcmd/customCmdEvent.h \

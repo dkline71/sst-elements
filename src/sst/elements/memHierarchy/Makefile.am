@@ -68,6 +68,7 @@ libmemHierarchy_la_SOURCES = \
 	memNIC.h \
 	memNICFour.h \
 	memNICFour.cc \
+	cacheShim.h \
 	customcmd/customCmdEvent.h \
 	customcmd/customCmdMemory.h \
 	customcmd/customOpCodeCmd.h \
@@ -226,7 +227,7 @@ nobase_sst_HEADERS = \
 	memTypes.h
 
 libmemHierarchy_la_LDFLAGS = -module -avoid-version
-libmemHierarchy_la_LIBADD = 
+libmemHierarchy_la_LIBADD =
 
 if HAVE_RAMULATOR
 libmemHierarchy_la_LDFLAGS += $(RAMULATOR_LDFLAGS)

@@ -16,6 +16,8 @@
 #ifndef _MEMHIERARCHY_MULTIPORTSHIM_H_
 #define _MEMHIERARCHY_MULTIPORTSHIM_H_
 
+#include <map>
+
 #include <sst/core/event.h>
 #include <sst/core/output.h>
 #include <sst/core/link.h>
@@ -73,6 +75,9 @@ private:
     uint64_t numPorts_;
 
     std::vector< SST::Link* > links_;
+
+    std::map< std::string, LinkId_t >   nameMap_;
+    std::map< LinkId_t, SST::Link* >    linkIdMap_;
 
     // Event handlers
     void handleResponse(SST::Event *event);

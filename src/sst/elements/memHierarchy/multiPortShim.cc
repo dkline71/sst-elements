@@ -29,28 +29,44 @@ MultiPortShim::MultiPortShim(Component* parent, Params &params) : MemLinkBase(pa
     out_.init("", 1, 0, Output::STDOUT);
 
     lineSize_ = params.find< uint64_t >("line_size", 64);
-    numPorts_ = params.find< uint64_t >("cacheShim.num_ports", 1);
+//     numPorts_ = params.find< uint64_t >("cacheShim.num_ports", 1);
+    numPorts_ = 0;
 
     std::cout << "-------- MultiPortShim (" << getName() << "), " << lineSize_ << " " << numPorts_ << " --------\n" << std::endl;
 
     // Configure link
     std::string latency = params.find<std::string>("latency", "50ps");
-    std::string port = params.find<std::string>("port", "port");
 
-    std::string linkname;
-    for( auto i = 0; i < numPorts_; i++ ) {
-        linkname = "port_" + std::to_string(i);
+    std::string linkname = "port_0";
+    while( isPortConnected(linkname) ) {
         SST::Link* link = configureLink(linkname, latency, new Event::Handler< MultiPortShim >(this, &MultiPortShim::recvNotify));
-
         if (!link) {
-            dbg.fatal(CALL_INFO, -1, "%s MemLink: Unable to configure link on port '%s'\n", getName().c_str(), port.c_str());
+            dbg.fatal(CALL_INFO, -1, "%s MemLink: Unable to configure link on port '%s'\n", getName().c_str(), linkname.c_str());
         }
 
         dbg.debug(_L10_, "%s memLink info is: Name: %s, addr: %" PRIu64 ", id: %" PRIu32 "\n",
                 getName().c_str(), info.name.c_str(), info.addr, info.id);
 
         links_.push_back(link);
+
+        linkIdMap_[links_[numPorts_]->getId()] = links_[numPorts_];
+        numPorts_++;
+        linkname = "port_" + std::to_string(numPorts_);
     }
+
+//     for( auto i = 0; i < numPorts_; i++ ) {
+//         linkname = "port_" + std::to_string(i);
+//         SST::Link* link = configureLink(linkname, latency, new Event::Handler< MultiPortShim >(this, &MultiPortShim::recvNotify));
+//
+//         if (!link) {
+//             dbg.fatal(CALL_INFO, -1, "%s MemLink: Unable to configure link on port '%s'\n", getName().c_str(), linkname.c_str());
+//         }
+//
+//         dbg.debug(_L10_, "%s memLink info is: Name: %s, addr: %" PRIu64 ", id: %" PRIu32 "\n",
+//                 getName().c_str(), info.name.c_str(), info.addr, info.id);
+//
+//         links_.push_back(link);
+//     }
 }
 
 void MultiPortShim::init(unsigned int phase) {
@@ -116,6 +132,9 @@ void MultiPortShim::send(MemEventBase *ev) {
 
 MemEventBase* MultiPortShim::recv() {
     SST::Event * ev = links_[0]->recv();
+
+    dbg.debug(_L4_,"RECV (%s). event: (%s)\n", getName().c_str(), dynamic_cast<MemEventBase*>(ev)->getBriefString().c_str());
+
 
     MemEventBase * mEv = dynamic_cast<MemEventBase*>(ev);
     if (mEv) return mEv;

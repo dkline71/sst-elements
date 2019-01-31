@@ -30,8 +30,7 @@ PresSimBackend::PresSimBackend(Component *comp, Params &params) : SimpleMemBacke
     searchWindowSize = params.find<int>("search_window_size", -1);
 
     //Initialize Reliability System
-    relSystem = PresSim::getReliabilitySystemInstance(
-            42);
+    relSystem = new PresSim::ReliabilitySimulator(42);
 
     // Create our backend & copy 'mem_size' through for now
     std::string backendName = params.find<std::string>("backend", "memHierarchy.simpleDRAM");
@@ -44,6 +43,9 @@ PresSimBackend::PresSimBackend(Component *comp, Params &params) : SimpleMemBacke
 	//If don't want the default clock, overwrite it here
 }
 
+PresSimBackend::~PresSimBackend(){
+	delete relSystem;
+}
 bool PresSimBackend::issueRequest(ReqId id, Addr addr, bool isWrite, unsigned numBytes ) {
 #ifdef __SST_DEBUG_OUTPUT__
     output->debug(_L10_, "Reorderer received request for 0x%" PRIx64 "\n", (Addr)addr);

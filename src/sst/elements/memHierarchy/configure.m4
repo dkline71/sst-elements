@@ -11,6 +11,9 @@ AC_DEFUN([SST_memHierarchy_CONFIG], [
   # Use global DRAMSim check
   SST_CHECK_DRAMSIM([],[],[AC_MSG_ERROR([DRAMSim requested but could not be found])])
 
+  # Use global PresSim check
+  SST_CHECK_PRESSIM([],[],[AC_MSG_ERROR([PresSim requested but could not be found])])
+  
   # Use global HBMDRAMSim check
   SST_CHECK_HBMDRAMSIM([],[],[AC_MSG_ERROR([HBM DRAMSim requested but could not be found])])
 

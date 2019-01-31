@@ -1,21 +1,21 @@
 
 AC_DEFUN([SST_CHECK_PRESSIM], [
-  AC_ARG_WITH([presSim],
-    [AS_HELP_STRING([--with-presSim@<:@=DIR@:>@],
+  AC_ARG_WITH([pressim],
+    [AS_HELP_STRING([--with-pressim@<:@=DIR@:>@],
       [Use PresSim package installed in optionally specified DIR])])
 
   sst_check_pressim_happy="yes"
-  AS_IF([test "$with_presSim" = "no"], [sst_check_pressim_happy="no"])
+  AS_IF([test "$with_pressim" = "no"], [sst_check_pressim_happy="no"])
 
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"
   LIBS_saved="$LIBS"
 
-  AS_IF([test ! -z "$with_presSim" -a "$with_presSim" != "yes"],
-    [PRESSIM_CPPFLAGS="-I$with_presSim -DHAVE_PRESSIM"
+  AS_IF([test ! -z "$with_pressim" -a "$with_pressim" != "yes"],
+    [PRESSIM_CPPFLAGS="-I$with_pressim -DHAVE_PRESSIM"
      CPPFLAGS="$PRESSIM_CPPFLAGS $CPPFLAGS"
-     PRESSIM_LDFLAGS="-L$with_presSim"
-     PRESSIM_LIBDIR="$with_presSim"
+     PRESSIM_LDFLAGS="-L$with_pressim"
+     PRESSIM_LIBDIR="$with_pressim"
      LDFLAGS="$PRESSIM_LDFLAGS $LDFLAGS"],
     [PRESSIM_CPPFLAGS=
      PRESSIM_LDFLAGS=
@@ -23,8 +23,8 @@ AC_DEFUN([SST_CHECK_PRESSIM], [
 
   AC_LANG_PUSH(C++)
   AC_CHECK_HEADERS([PresSim.h], [], [sst_check_pressim_happy="no"])
-  AC_CHECK_LIB([presSim], [libpresSim_is_present],
-    [PRESSIM_LIB="-lpresSim"], [sst_check_pressim_happy="no"])
+  AC_CHECK_LIB([pressim], [libpressim_is_present],
+    [PRESSIM_LIB="-lpressim"], [sst_check_pressim_happy="no"])
   AC_LANG_POP(C++)
 
   CPPFLAGS="$CPPFLAGS_saved"

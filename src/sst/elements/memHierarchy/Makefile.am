@@ -246,6 +246,16 @@ nobase_sst_HEADERS += membackend/pagedMultiBackend.h
 
 endif
 
+if HAVE_PRESSIM
+libmemHierarchy_la_LDFLAGS += $(PRESSIM_LDFLAGS)
+libmemHierarchy_la_LIBADD += $(PRESSIM_LIB)
+libmemHierarchy_la_SOURCES += membackend/presSimBackend.cc \
+    membackend/presSimBackend.h
+nobase_sst_HEADERS += membackend/presSimBackend.h
+AM_CPPFLAGS += $(PRESSIM_CPPFLAGS) -DHAVE_LIBPRESSIM
+
+endif
+
 if HAVE_HBMDRAMSIM
 libmemHierarchy_la_LDFLAGS += $(HBMDRAMSIM_LDFLAGS)
 libmemHierarchy_la_LIBADD += $(HBMDRAMSIM_LIB)

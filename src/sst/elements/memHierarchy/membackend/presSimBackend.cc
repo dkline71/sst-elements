@@ -28,9 +28,11 @@ PresSimBackend::PresSimBackend(Component *comp, Params &params) : SimpleMemBacke
 
     reqsPerCycle = params.find<int>("max_issue_per_cycle", -1);
     searchWindowSize = params.find<int>("search_window_size", -1);
-
+	std::string config_file = params.find<std::string>("config", NO_STRING_DEFINED);
+    if(NO_STRING_DEFINED == config_file)
+        output->fatal(CALL_INFO, -1, "Model must define a 'config' file parameter\n");	
     //Initialize Reliability System
-    relSystem = new PresSim::ReliabilitySimulator(42);
+    relSystem = new PresSim::ReliabilitySimulator(config_file);
 
     // Create our backend & copy 'mem_size' through for now
     std::string backendName = params.find<std::string>("backend", "memHierarchy.simpleDRAM");

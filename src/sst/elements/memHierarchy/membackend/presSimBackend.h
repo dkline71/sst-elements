@@ -42,7 +42,8 @@ public:
             {"verbose", "Sets the verbosity of the backend output", "0"},
             {"max_issue_per_cycle", "Maximum number of requests to issue per cycle. 0 or negative is unlimited.", "-1"},
             {"search_window_size",  "Maximum number of requests to search each cycle. 0 or negative is unlimited.", "-1"},
-            {"backend",             "Backend memory system", "memHierarchy.simpleDRAM"} )
+            {"backend",             "Backend memory system", "memHierarchy.simpleDRAM"},
+			{"config",              "Configuration parameters for PresSim"} )
 
 /* Begin class definition */
     ~PresSimBackend();

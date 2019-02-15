@@ -27,7 +27,7 @@
 namespace SST {
 namespace MemHierarchy {
 
-class PresSimBackend : public SimpleMemBackend {
+class PresSimBackend : public SimpleMemDataBackend {
 public:
 /* Element Library Info */
     SST_ELI_REGISTER_SUBCOMPONENT(PresSimBackend,
@@ -48,7 +48,7 @@ public:
 /* Begin class definition */
     ~PresSimBackend();
     PresSimBackend(Component *comp, Params &params);
-	virtual bool issueRequest( ReqId, Addr, bool isWrite, unsigned numBytes );
+	virtual bool issueRequest( ReqId, Addr, bool isWrite, unsigned numBytes, vector<uint8_t> data );
     void setup();
     void finish();
     bool clock(Cycle_t cycle);
@@ -56,19 +56,22 @@ public:
 
 private:
     void handleMemReponse( ReqId id ) {
-        SimpleMemBackend::handleMemResponse( id );
+        SimpleMemDataBackend::handleMemResponse( id );
     }
     struct Req {
-        Req( ReqId id, Addr addr, bool isWrite, unsigned numBytes ) :
-            id(id), addr(addr), isWrite(isWrite), numBytes(numBytes)
+        Req( ReqId id, Addr addr, bool isWrite, unsigned numBytes, uint64_t delay ) :
+            id(id), addr(addr), isWrite(isWrite), numBytes(numBytes), delay(delay)
         { }
         ReqId id;
         Addr addr;
         bool isWrite;
         unsigned numBytes;
+		uint64_t delay;
     };
+	Component* owner;
     PresSim::ReliabilitySimulator *relSystem;
     SimpleMemBackend* backend;
+	uint64_t ps_time;
     int reqsPerCycle;       // Number of requests to issue per cycle (max) -> memCtrl limits how many we accept
     int searchWindowSize;   // Number of requests to search when looking for requests to issue
     std::list<Req> requestQueue;   // List of requests waiting to be issued

@@ -33,6 +33,8 @@ libmemHierarchy_la_SOURCES = \
 	membackend/memBackendConvertor.cc \
 	membackend/simpleMemBackendConvertor.h \
 	membackend/simpleMemBackendConvertor.cc \
+	membackend/simpleMemDataBackendConvertor.h \
+	membackend/simpleMemDataBackendConvertor.cc \
 	membackend/flagMemBackendConvertor.h \
 	membackend/flagMemBackendConvertor.cc \
 	membackend/extMemBackendConvertor.h \
@@ -212,6 +214,7 @@ nobase_sst_HEADERS = \
 	membackend/flagMemBackendConvertor.h \
 	membackend/scratchBackendConvertor.h \
 	membackend/simpleMemBackendConvertor.h \
+	membackend/simpleMemDataBackendConvertor.h \
 	membackend/simpleMemScratchBackendConvertor.h \
 	memoryController.h \
 	coherentMemoryController.h \

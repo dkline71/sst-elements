@@ -29,7 +29,7 @@
 #include "sst/elements/memHierarchy/membackend/simpleMemBackendConvertor.h"
 #include "sst/elements/memHierarchy/membackend/flagMemBackendConvertor.h"
 #include "sst/elements/memHierarchy/membackend/extMemBackendConvertor.h"
-
+#include "sst/elements/memHierarchy/membackend/simpleMemDataBackendConvertor.h"
 #define NO_STRING_DEFINED "N/A"
 
 namespace SST {
@@ -137,6 +137,27 @@ class SimpleMemBackend : public MemBackend {
   private:
     std::function<void(ReqId)> m_respFunc;
 };
+
+/* MemBackend - timing and data only */
+class SimpleMemDataBackend : public MemBackend {
+  public:
+    SimpleMemDataBackend() : MemBackend() {}
+    SimpleMemDataBackend(Component *comp, Params &params) : MemBackend(comp,params) {}
+
+    virtual bool issueRequest( ReqId, Addr, bool isWrite, unsigned numBytes, std::vector<uint8_t> data ) = 0;
+
+    void handleMemResponse( ReqId id ) {
+        m_respFunc( id );
+    }
+
+    virtual void setResponseHandler( std::function<void(ReqId)> func ) {
+        m_respFunc = func;
+    }
+
+  private:
+    std::function<void(ReqId)> m_respFunc;
+};
+
 
 /* MemBackend - timing and passes request/response flags */
 class FlagMemBackend : public MemBackend {
